@@ -1,6 +1,8 @@
 # ignored folders
 datasets/*
 experiments/*
+!experiments/pretrained_models/
+!experiments/pretrained_models/*.pth
 results/*
 tb_logger/*
 wandb/*
@@ -18,6 +20,7 @@ version.py
 # ignored files with suffix
 *.html
 *.pth
+!experiments/pretrained_models/*.pth
 *.zip
 
 # template
