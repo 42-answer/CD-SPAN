@@ -81,7 +81,7 @@ However, standard spatial and channel attention mechanisms (e.g., Squeeze-and-Ex
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.96\textwidth,height=2.3in,keepaspectratio]{methodology_architecture.png}
+\includegraphics[width=\textwidth,height=2.8in,keepaspectratio]{methodology_architecture.png}
 \caption{\textbf{Comprehensive Methodology Architecture of Proposed CAD-SPAN}. (a) Macro-Architecture: Low-resolution input $I_{LR}$ is projected by a re-parameterizable $\text{Conv3XC}$ layer ($F_0$), processed through a cascade of 6 Curvature-Aware Directional Swift Parameter-free Attention Blocks (CAD-SPAB), aggregated via hierarchical multi-stage concatenation, and upscaled by sub-pixel convolution (PixelShuffle). (b) Micro-Architecture of CAD-SPAB: High-level feature $H$ is extracted via three consecutive $\text{Conv3XC}$ convolutions with SiLU activations. $H$ is simultaneously evaluated through: (1) Temperature-calibrated origin-symmetric gating $A_{\text{sym}} = \frac{1}{2}\tanh(\tau \cdot H)$; (2) First-order directional gradient flux $\|\nabla H\|_2$ via orthogonal Sobel kernels ($K_x, K_y$); and (3) Second-order isotropic curvature $\Delta H$ via discrete Laplacian kernel $K_L$. The resulting curvature-modulated gate $\widetilde{A}$ modulates the residual feature $(H + X_{\text{in}})$.}
 \label{fig:methodology_arch}
 \end{figure*}
@@ -350,6 +350,7 @@ Fig.~\ref{fig:loss_curve} presents the mandatory \textbf{Training Loss vs. Epoch
 
 Fig.~\ref{fig:visual_comparisons} display zoomed visual crops on \textit{butterfly} (Set5) and \textit{monarch} (Set14). Bicubic upsampling exhibits pronounced blurring and jaggies. While baseline SPAN recovers coarse boundaries, CAD-SPAN+ reconstructs razor-sharp wing veins, recovers white boundary dots on the monarch butterfly, and suppresses ringing artifacts around high-contrast edges.
 
+\enlargethispage{3.5\baselineskip}
 \section{Conclusion and References}
 In this project, we investigated lightweight attention mechanisms for Single Image Super-Resolution, focusing on the state-of-the-art Swift Parameter-free Attention Network (SPAN). We reproduced and validated baseline SPAN on Set5, Set14, and BSD100 benchmarks. We then formulated \textbf{CAD-SPAN}, proving the mathematical equivalence of origin-symmetric attention to scaled hyperbolic tangent gating, and introducing differential geometric priors that decompose feature maps into first-order directional flux and second-order isotropic curvature. Extensive evaluations confirm that CAD-SPAN consistently outperforms the NTIRE 2024 challenge winner in both PSNR and SSIM across all benchmarks, with peak gains of $+0.160$ dB on high-frequency textured scenes.
 
