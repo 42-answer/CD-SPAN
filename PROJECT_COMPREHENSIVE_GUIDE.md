@@ -42,7 +42,7 @@
 ## 1. Executive Summary & High-Level Intuition
 
 ### The Core Problem in Simple Terms
-Imagine you are given a tiny, blurry photo (e.g., $32 \times 32$ pixels) and asked to upscale it $\times 4$ into a crystal-clear, high-definition photo ($128 \times 128$ pixels). 
+Imagine you are given a tiny, blurry photo (e.g., $32 \times 32$ pixels) and asked to upscale it $\times 4$ into a crystal-clear, high-definition photo ($128 \times 128$ pixels).
 - If you use basic math (like Bicubic interpolation), the computer simply averages nearby pixels. The result is blurry, edges become fuzzy, and fine textures (like butterfly wing veins, feathers, or text) turn into smeared blobs.
 - Deep neural networks can learn to fill in these missing details by recognizing patterns. In recent years, researchers discovered that **attention mechanisms** (giving the network the ability to focus its computational power on sharp lines, textures, and edges while ignoring flat, boring backgrounds) make images look substantially crisper.
 - **The Catch**: Standard attention mechanisms (like Vision Transformers or Self-Attention) require millions of learnable parameters and massive memory bandwidth. They run hot, drain batteries, and are far too slow to run on edge hardware (mobile phones, smart cameras, drones, or handheld consoles).
@@ -59,7 +59,7 @@ When we thoroughly investigated SPAN's mathematics and architecture, we uncovere
 2. SPAN treats every pixel in isolation (point-wise). It cannot tell whether an edge is horizontal, vertical, or diagonal! **We formulated a First-Order Directional Sobel Gradient Flux operator** that measures orthogonal directional derivatives in feature space.
 3. SPAN is completely blind to **second-order curvature**. Fine corners, junction points, and curved boundary lines are governed by second derivatives. **We formulated a Second-Order Discrete Isotropic Laplacian Curvature operator**.
 
-By coupling these differential geometric operators into a zero-parameter modulator ($\Phi(H)$), we created **CAD-SPAN (Curvature-Aware Directional Swift Attention Network)**. 
+By coupling these differential geometric operators into a zero-parameter modulator ($\Phi(H)$), we created **CAD-SPAN (Curvature-Aware Directional Swift Attention Network)**.
 - Single-pass CAD-SPAN achieves strictly higher structural similarity (**SSIM**) across **all benchmark datasets (Set5, Set14, BSD100)**.
 - Test-time dihedral self-ensemble (**CAD-SPAN+**) delivers significant PSNR boosts across the board, with per-image surges up to **+0.160 dB** on textured scenes like `butterfly.png` and **+0.140 dB** on `monarch.png`—all while preserving edge-deployment efficiency!
 
@@ -197,7 +197,7 @@ Despite SPAN's impressive efficiency, our in-depth mathematical analysis and emp
 Wan et al. selected the activation function $\sigma_a(x) = \text{sigmoid}(x) - 0.5$ purely by intuition. They did not provide a theoretical framework proving its underlying mathematical class, nor did they explore whether the slope (temperature steepness $\tau$) at the zero-crossing origin was optimal for feature discrimination.
 
 ### Limitation 2: Isotropic (Direction-Blind) Gradient Processing
-The activation $\sigma(H) - 0.5$ is applied point-wise (scalar pixel by scalar pixel). 
+The activation $\sigma(H) - 0.5$ is applied point-wise (scalar pixel by scalar pixel).
 - In physical imagery, natural edges are fundamentally **directional**:
   - Horizontal lines (roofs, tables, window frames).
   - Vertical lines (pillars, tree trunks, walls).
@@ -581,7 +581,30 @@ The effectiveness of CAD-SPAN is most dramatically demonstrated by comparing ini
 
 ---
 
-## 8. Codebase Architecture & File-by-File Walkthrough
+## 8. Architectural Diagram Analysis: Truth vs. Fallacies & Complete Rectification Log
+
+Figure 1 (`methodology_architecture.png`) serves as the central visual and theoretical anchor for both the IEEE conference paper and the CAD-SPAN project. To guarantee complete academic rigor and zero conceptual dissonance between the manuscript, the codebase, and the original competition-winning SPAN paper (Hongyuan Yu et al., CVPRW 2024), we performed a deep forensic audit of the architectural diagrams.
+
+Below is an exhaustive documentation of the common conceptual fallacies, the authentic SPAN ground truth, and the precise logical rectifications implemented in CAD-SPAN:
+
+### 8.1 Summary of Conceptual & Logical Rectifications
+
+| Component / Subsystem | Common Fallacy / Previous Mistake | Authentic Reality & Rectified Architecture | Theoretical & Practical Justification |
+| :--- | :--- | :--- | :--- |
+| **Global Output Skip** | Added an external bicubic skip connection: $I_{SR} = \text{Model}(I_{LR}) + \text{Bicubic}(I_{LR})$. | **Pure Sub-Pixel PixelShuffle**: The network directly predicts RGB pixel values from low-resolution feature maps via `PixelShuffle(upscale_factor=4)`. | Authentic SPAN does **not** use an additive bicubic skip. The model learns end-to-end mapping directly to RGB color space, avoiding residual color tinting and enabling full high-frequency synthesis. |
+| **Pre-Shuffle Residual** | Injected a global identity add node ($+ F_0$) right before the PixelShuffle block. | **Multi-Stage Channel Concatenation**: $F_0$ is concatenated alongside deep features in $[F_0, F_{b6\_conv}, F_{b1}, F_{b5}]$, followed by $1\times 1$ conv compression. | In code (`span_arch.py`), $F_0$ is already supplied to `torch.cat`. Adding it again before PixelShuffle constitutes a double-addition error that distorts channel activations. |
+| **Refinement Layer** | Omitted the post-$\text{SPAB}_6$ convolution, jumping straight from block 6 to concatenation. | **Restored Refine Conv (`conv_2`)**: $\text{CAD-SPAB}_6$ output $F_{b6}$ passes through Conv3XC ($48 \to 48$) to produce $F_{b6\_conv}$ ($\mathrm{Feat.Map}_7$). | Code explicitly defines `self.conv_2 = Conv3XC(48, 48)`. This layer refines deep non-linear representations before linear channel compression. |
+| **Hierarchical Skip Routing** | Routed skip connections underneath blocks in opposite criss-crossing directions. | **Unified Top-Mounted Multi-Scale Pyramid**: All four feature taps ($F_0, F_{b1}, F_{b5}, F_{b6\_conv}$) flow across the top in parallel, mirroring Figure 2 of the SPAN paper. | Mirrors authentic CVPR publication topology, visually reinforcing the hierarchical feature reuse pyramid. |
+| **Internal Attention Dataflow** | Left modulated attention gate $\widetilde{A}(H)$ disconnected or improperly routed to residual add. | **Hadamard Content Gating**: Local residual addition $(H + X_{in})$ is computed first at $\oplus$, then multiplied by modulated gate $\widetilde{A}(H)$ at $\odot$: $O = (H + X_{in}) \odot \widetilde{A}(H)$. | Matches line 77 of `ag_span_arch.py`: `out = (out3 + x) * att_mod`. Content and attention operate in distinct functional spaces before element-wise gating. |
+| **Sobel Kernel Normalization** | Displayed unnormalized integer values $\begin{bmatrix}-1&0&1\\-2&0&2\\-1&0&1\end{bmatrix}$ without scale factor. | **Exact $1/8$ Normalization**: Displayed as $\frac{1}{8} K_x$ and $\frac{1}{8} K_y$ matching `torch.float32 / 8.0` in code. | Standard finite-difference formulation for continuous gradient approximation requires dividing by distance $(2 \times 4 = 8)$. Without $1/8$, gradient magnitude is artificially inflated $8\times$. |
+| **Convolution Operator Type** | Depicted gradient/curvature convolutions as standard dense 2D convolutions. | **Parameter-Free Channel-Wise Depthwise Convolutions**: Labeled explicitly as $*_{dw}$ with `groups = 48`. | Fixed differential kernels operate independently per feature channel ($C=48$) with zero inter-channel cross-talk and zero trainable weights. |
+| **Mathematical Operator Symbols** | Used conflicting symbols ($\otimes$ in one place, $\odot$ in another) for element-wise multiplication. | **Consistent Formal Notation**: $\oplus$ strictly denotes Element-Wise Addition; $\odot$ strictly denotes Element-Wise Hadamard Product. | In formal linear algebra, $\otimes$ denotes the Kronecker tensor product. Using $\odot$ prevents reviewer ambiguity. |
+| **Conv3XC Linear Associativity** | Did not clarify whether activations exist between layers in the training cascade. | **Strict Linearity Highlighted**: Explicitly noted that no non-linearities exist between $1\times 1$, $3\times 3$, and $1\times 1$ convs during training. | Convolution is an associative linear operator: $(X * W_1) * W_2 * W_3 = X * (W_1 * W_2 * W_3)$ **only** if the cascade is strictly linear. |
+| **Conv3XC Bias Fusion Math** | Omitted the offline bias fusion formula, showing only weight fusion. | **Full Bias Fusion Equation**: Added $\mathbf{B}_{eval} = \mathbf{W}_3 * (\mathbf{W}_2 * \mathbf{B}_1 + \mathbf{B}_2) + \mathbf{B}_3 + \mathbf{B}_{sk}$. | Matches lines 127-141 of `span_arch.py`. Bias accumulation through cascaded 1D/2D convolutions is essential for exact numerical equivalence. |
+
+---
+
+## 9. Codebase Architecture & File-by-File Walkthrough
 
 The repository is structured cleanly with zero obsolete or duplicate files:
 
@@ -628,22 +651,16 @@ SPAN/
 ├── evaluate_comprehensive_benchmarks.py      # Multi-benchmark comparison script
 ├── evaluate_all_benchmarks.py                # Per-image PSNR and SSIM breakdown evaluator
 ├── generate_comprehensive_visual_gallery.py  # Script generating the 4-case comparison figure and crops
-├── generate_architecture_diagram.py          # Script generating Figure 1 (4-panel 6060x4110 diagram)
-├── generate_ablation_graphs.py               # Script generating Figure 3
+├── generate_perfected_architecture.py        # Script generating Figure 1 (publication-grade architecture diagram)
+├── generate_ablation_graphs.py               # Script generating Figure 3 (ablation curves)
 ├── test_self_ensemble.py                     # D4 dihedral group test-time ensemble verification
 ├── tune_novel_attention.py                   # Automated grid search script for gamma and tau
 └── train_ag_span.py                          # 20-epoch training and optimization pipeline
-├── evaluate_all_benchmarks.py                # Per-image PSNR and SSIM breakdown evaluator
-├── test_self_ensemble.py                     # D4 dihedral group test-time ensemble verification
-├── tune_novel_attention.py                   # Automated grid search script for gamma and tau
-├── train_ag_span.py                          # 20-epoch training and optimization pipeline
-├── generate_architecture_diagram.py          # Script generating Figure 1 (4860x3120 high-res diagram)
-└── generate_ablation_graphs.py               # Script generating Figure 3
 ```
 
 ---
 
-## 9. Comprehensive FAQ & Presentation/Viva Defense Guide
+## 10. Comprehensive FAQ & Presentation/Viva Defense Guide
 
 Here are the 10 most critical technical questions evaluators or professors may ask during a project defense, accompanied by model technical answers:
 

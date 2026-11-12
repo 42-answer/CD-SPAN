@@ -198,3 +198,4 @@ out_all = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\comprehensive_visual
 fig.savefig(out_all, bbox_inches='tight', dpi=300)
 plt.close(fig)
 print(f"Saved comprehensive 4-case gallery to {out_all}")
+
