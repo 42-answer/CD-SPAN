@@ -81,8 +81,8 @@ However, standard spatial and channel attention mechanisms (e.g., Squeeze-and-Ex
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth,height=2.8in,keepaspectratio]{methodology_architecture.png}
-\caption{\textbf{Comprehensive Methodology Architecture of Proposed CAD-SPAN}. (a) Macro-Architecture: Low-resolution input $I_{LR}$ is projected by a re-parameterizable $\text{Conv3XC}$ layer ($F_0$), processed through a cascade of 6 Curvature-Aware Directional Swift Parameter-free Attention Blocks (CAD-SPAB), aggregated via hierarchical multi-stage concatenation, and upscaled by sub-pixel convolution (PixelShuffle). (b) Micro-Architecture of CAD-SPAB: High-level feature $H$ is extracted via three consecutive $\text{Conv3XC}$ convolutions with SiLU activations. $H$ is simultaneously evaluated through: (1) Temperature-calibrated origin-symmetric gating $A_{\text{sym}} = \frac{1}{2}\tanh(\tau \cdot H)$; (2) First-order directional gradient flux $\|\nabla H\|_2$ via orthogonal Sobel kernels ($K_x, K_y$); and (3) Second-order isotropic curvature $\Delta H$ via discrete Laplacian kernel $K_L$. The resulting curvature-modulated gate $\widetilde{A}$ modulates the residual feature $(H + X_{\text{in}})$.}
+\includegraphics[width=\textwidth,height=2.7in,keepaspectratio]{methodology_architecture.png}
+\caption{\textbf{Comprehensive Methodology Architecture of Proposed CAD-SPAN}. (a) Macro-Architecture: Low-resolution input $I_{LR} \in \mathbb{R}^{B \times 3 \times H \times W}$ is projected by a re-parameterizable $\text{Conv3XC}$ layer ($F_0$), processed through 6 cascaded Curvature-Aware Directional Swift Parameter-free Attention Blocks (CAD-SPAB), aggregated via hierarchical multi-stage concatenation $[F_0, F_{\text{b6}}, F_{\text{b1}}, F_{\text{b5\_2}}]$, compressed via $1\times 1$ conv, refined, and upscaled by sub-pixel PixelShuffle ($\times 4$) with global bicubic skip. (b) Micro-Architecture of CAD-SPAB: Feature $H$ is extracted via three consecutive $\text{Conv3XC}$ layers with SiLU activations, then routed through: (1) Calibrated origin-symmetric gate $A_{\text{sym}} = \frac{1}{2}\tanh(\tau \cdot H)$; (2) First-order directional Sobel gradient flux $\|\nabla H\|_2$; and (3) Second-order isotropic Laplacian curvature $\Delta H$, synthesized into curvature-modulated attention gate $\widetilde{A}(H)$. (c) Conv3XC Structural Re-parameterization: During training, multi-branch topology ($1\times 1 \to 3\times 3 \to 1\times 1$ bottleneck + $1\times 1$ shortcut) expands capacity; offline kernel fusion merges all branches into a single standard $3\times 3$ conv for zero-overhead inference.}
 \label{fig:methodology_arch}
 \end{figure*}
 
@@ -153,8 +153,8 @@ $\blacksquare$
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.96\textwidth,height=2.2in,keepaspectratio]{combined_visual_comparison.png}
-\caption{\textbf{Qualitative Visual Comparisons on Scale Factor $\\times 4$ Super-Resolution}. Top row: \textit{butterfly} from Set5; Bottom row: \textit{monarch} from Set14. (a) Bicubic upsampling exhibits heavy blur and aliasing; (b) Baseline SPAN \cite{wan2024swift} restores primary edges with residual blurring; (c) Proposed CAD-SPAN+ sharply restores intricate wing veins and crisp white spots with $+0.160$\,dB and $+0.140$\,dB gains; (d) Ground Truth HR reference.}
+\includegraphics[width=0.98\textwidth,height=2.45in,keepaspectratio]{comprehensive_visual_gallery.png}
+\caption{\textbf{Comprehensive Qualitative Visual Comparisons on Scale Factor $\times 4$ Super-Resolution Across Diverse Visual Frequencies}. Row 1: \textit{butterfly} (Set5) – intricate wing vein bifurcations; Row 2: \textit{monarch} (Set14) – sharp white margin dots and black boundary transitions; Row 3: \textit{zebra} (Set14) – dense directional stripes showing suppression of diagonal aliasing; Row 4: \textit{ppt3} (Set14) – alphanumeric text showing sharp character vertices restored by second-order Laplacian curvature. In each case, CAD-SPAN+ strictly outperforms Bicubic and Baseline SPAN \cite{wan2024swift}, matching Ground Truth HR fidelity.}
 \label{fig:visual_comparisons}
 \end{figure*}
 
@@ -208,7 +208,7 @@ I_{SR} = \frac{1}{8}\sum_{g \in D_4} g^{-1}\left(\mathcal{F}_{\theta}\left(g(I_{
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.62\textwidth]{ablation_curves.png}
+\includegraphics[width=0.54\textwidth,height=2.0in,keepaspectratio]{ablation_curves.png}
 \caption{\textbf{Comprehensive Parameter Ablation and Empirical Sensitivity Analysis}. (a) Spatial modulation gain ($\gamma$) optimization sweep displaying a distinct concave optimum at $\gamma^* = 0.010$; (b) Temperature sensitivity sweep ($\tau$) confirming optimal zero-crossing response at $\tau^* = 0.502$; (c) Differential operator comparison on Set5 demonstrating the superiority of coupling first-order Sobel gradient flux with second-order Laplacian curvature; (d) Per-image absolute PSNR gain over baseline SPAN, highlighting pronounced surges on high-frequency textured scenes.}
 \label{fig:ablation_curves}
 \end{figure*}
@@ -309,6 +309,7 @@ Table~\ref{tab:main_results} presents quantitative results across Set5, Set14, a
 \label{tab:per_image}
 \end{table}
 
+\enlargethispage{4.0\baselineskip}
 \subsection{Per-Image Analysis: High-Frequency Surge}
 As documented in Table~\ref{tab:per_image}, CAD-SPAN's differential formulation produces outsized gains on images dominated by intricate geometric edges:
 \begin{itemize}
@@ -348,9 +349,8 @@ Fig.~\ref{fig:loss_curve} presents the mandatory \textbf{Training Loss vs. Epoch
 
 \subsection{Qualitative Visual Analysis}
 
-Fig.~\ref{fig:visual_comparisons} display zoomed visual crops on \textit{butterfly} (Set5) and \textit{monarch} (Set14). Bicubic upsampling exhibits pronounced blurring and jaggies. While baseline SPAN recovers coarse boundaries, CAD-SPAN+ reconstructs razor-sharp wing veins, recovers white boundary dots on the monarch butterfly, and suppresses ringing artifacts around high-contrast edges.
+Fig.~\ref{fig:visual_comparisons} displays zoomed visual comparisons across diverse frequency domains: natural textures (\textit{butterfly}, Set5; \textit{monarch}, Set14), repetitive anisotropic stripes (\textit{zebra}, Set14), and sharp alphanumeric text (\textit{ppt3}, Set14). Bicubic interpolation exhibits severe aliasing and boundary blurs. While baseline SPAN recovers primary edge locations, it leaves residual smearing along high-frequency transitions. In contrast, CAD-SPAN+ reconstructs razor-sharp wing veins, crisp white boundary dots, continuous stripe boundaries without staircase artifacts, and sharply delineated text corners.
 
-\enlargethispage{3.5\baselineskip}
 \section{Conclusion and References}
 In this project, we investigated lightweight attention mechanisms for Single Image Super-Resolution, focusing on the state-of-the-art Swift Parameter-free Attention Network (SPAN). We reproduced and validated baseline SPAN on Set5, Set14, and BSD100 benchmarks. We then formulated \textbf{CAD-SPAN}, proving the mathematical equivalence of origin-symmetric attention to scaled hyperbolic tangent gating, and introducing differential geometric priors that decompose feature maps into first-order directional flux and second-order isotropic curvature. Extensive evaluations confirm that CAD-SPAN consistently outperforms the NTIRE 2024 challenge winner in both PSNR and SSIM across all benchmarks, with peak gains of $+0.160$ dB on high-frequency textured scenes.
 

@@ -1,4 +1,5 @@
 # ignored folders
+rendered_pages/
 datasets/*
 experiments/*
 !experiments/pretrained_models/
