@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Paper](https://img.shields.io/badge/IEEE%20Format-6%20Pages%20PDF-blue.svg)](CAD_SPAN_IEEE_Paper.pdf)
+[![Paper](https://img.shields.io/badge/IEEE%20Format-6%20Pages%20PDF-blue.svg)](report/CAD_SPAN_IEEE_Paper.pdf)
 [![Pretrained](https://img.shields.io/badge/Model%20Weights-Scale%20x4-success.svg)](experiments/pretrained_models/cad_span_x4.pth)
 [![PyTorch](https://img.shields.io/badge/PyTorch-1.11%2B-ee4c2c.svg?logo=pytorch)](https://pytorch.org/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE.txt)
@@ -45,7 +45,7 @@ To overcome these deficiencies, we propose **CAD-SPAN** (Curvature-Aware Directi
 ## 📐 Architecture Overview
 
 <div align="center">
-  <img src="methodology_architecture.png" width="100%" alt="CAD-SPAN Methodology Architecture" />
+  <img src="report/methodology_architecture.png" width="100%" alt="CAD-SPAN Methodology Architecture" />
   <p><em>Figure 1: Comprehensive Methodology Architecture of CAD-SPAN. (a) Macro-Architecture displaying tensor dimensions across the 6 cascaded CAD-SPAB stages, hierarchical multi-stage concatenation $[F_0, F_{b6}, F_{b1}, F_{b5\_2}]$, and PixelShuffle sub-pixel upsampling. (b) Micro-Architecture of CAD-SPAB displaying the 3-stage Conv3XC cascade, temperature-calibrated origin-symmetric gate $A_{\text{sym}}$, numerical matrix grids for Sobel ($K_x, K_y$) and Laplacian ($K_L$) kernels, dual-differential modulator $\Phi(H)$, and gated residual output $O = (H + X_{\text{in}}) \odot \widetilde{A}$.</em></p>
 </div>
 
@@ -97,7 +97,7 @@ Intricate geometric scenes display significant PSNR surges:
 ## 🔬 Qualitative Visual Reconstruction
 
 <div align="center">
-  <img src="combined_visual_comparison.png" width="100%" alt="Qualitative Visual Comparison" />
+  <img src="report/combined_visual_comparison.png" width="100%" alt="Qualitative Visual Comparison" />
   <p><em>Figure 2: Qualitative Visual Comparisons on Scale Factor x4. Top row: butterfly (Set5); Bottom row: monarch (Set14). (a) Bicubic interpolation; (b) Baseline SPAN [Wan et al.]; (c) Proposed CAD-SPAN+ showing razor-sharp wing veins, elimination of ringing, and crisp white boundary spots; (d) Ground Truth HR reference.</em></p>
 </div>
 
@@ -106,13 +106,13 @@ Intricate geometric scenes display significant PSNR surges:
 ## 📈 Parameter Sensitivity & Ablation Studies
 
 <div align="center">
-  <img src="ablation_curves.png" width="85%" alt="Parameter Ablation Curves" />
+  <img src="report/ablation_curves.png" width="85%" alt="Parameter Ablation Curves" />
   <p><em>Figure 3: Comprehensive Parameter Ablations. (a) Spatial gain optimization sweep displaying a distinct concave optimum at $\gamma^* = 0.010$; (b) Temperature calibration sweep confirming optimal zero-crossing response at $\tau^* = 0.502$; (c) Differential operator comparison on Set5 demonstrating superiority of dual Sobel + Laplacian formulation; (d) Per-image absolute PSNR gain bar chart.</em></p>
 </div>
 
 ### Mandatory Training Loss vs. Epochs Curve
 <div align="center">
-  <img src="training_loss_curve.png" width="65%" alt="Training Loss vs Epochs" />
+  <img src="report/training_loss_curve.png" width="65%" alt="Training Loss vs Epochs" />
   <p><em>Figure 4: Empirical L1 Pixel Loss across 20 training epochs on DIV2K paired patches, displaying smooth, monotonic convergence ($0.04624 \to 0.02899$).</em></p>
 </div>
 
@@ -137,30 +137,31 @@ The repository includes the verified pretrained weights for both the baseline SP
 
 Run single-pass and self-ensemble evaluation on Set5, Set14, and BSD100:
 ```bash
-# Evaluate CAD-SPAN across all benchmarks
+# Evaluate CAD-SPAN across all benchmarks (Main entrypoint)
 python evaluate_cad_span.py
 
 # Run comprehensive comparative benchmark suite
-python evaluate_comprehensive_benchmarks.py
+python scripts/evaluate_comprehensive_benchmarks.py
 ```
 
 ### 3. Run Parametric Ablation Sweeps
 ```bash
-python tune_novel_attention.py
-python test_self_ensemble.py
+python scripts/tune_novel_attention.py
+python scripts/test_self_ensemble.py
 ```
 
 ### 4. Re-generate High-Resolution Figures
 ```bash
-python generate_architecture_diagram.py
-python generate_ablation_graphs.py
-python generate_visual_comparison_monarch.py
+python report/generate_architecture_diagram.py
+python report/generate_ablation_graphs.py
+python report/generate_visual_comparison_monarch.py
+python report/generate_comprehensive_visual_gallery.py
 ```
 
 ### 5. Compile IEEE Conference Paper (LaTeX to PDF)
-The research paper is written in the official IEEE 2-column format (`IEEE-conference-template-062824.tex`) and compiled to **exactly 6 pages**:
+The research paper is written in official IEEE 2-column format (`report/IEEE-conference-template-062824.tex`) and compiles to **exactly 6 pages**:
 ```bash
-# Compile via Tectonic (XeTeX)
+cd report
 tectonic IEEE-conference-template-062824.tex
 ```
 
@@ -170,42 +171,64 @@ tectonic IEEE-conference-template-062824.tex
 
 ```
 CD-SPAN/
-├── IEEE-conference-template-062824.tex       # Official IEEE Conference Paper (LaTeX, 6 Pages)
-├── IEEE-conference-template-062824.pdf       # Compiled Research Paper (PDF)
-├── CAD_SPAN_IEEE_Paper.pdf                   # Publication-Grade PDF
-├── CAD_SPAN_Submission_Package.zip           # Self-contained submission ZIP package (30 MB)
+├── evaluate_cad_span.py                      # Main Benchmark Evaluator (Single-Pass & Ensemble)
+├── train_ag_span.py                          # 20-epoch training & optimization pipeline
+├── README.md                                 # Official GitHub Presentation & Documentation
+├── PROJECT_COMPREHENSIVE_GUIDE.md            # Exhaustive Technical Master Guide (60 KB)
+├── LICENSE.txt                               # Apache 2.0 License
+├── requirements.txt                          # Python dependencies
+├── setup.py / setup.cfg                      # Package setup configuration
 │
-├── methodology_architecture.png              # Fig. 1: Technical Architecture Diagram
-├── combined_visual_comparison.png            # Fig. 2: Qualitative Visual Comparisons
-├── ablation_curves.png                       # Fig. 3: 4-Panel Parameter Ablation Graphs
-├── training_loss_curve.png                   # Fig. 4: Mandatory Training Loss Curve
-├── visual_comparison_cad.png                 # Crop: butterfly (Set5)
-├── visual_comparison_monarch.png             # Crop: monarch (Set14)
+├── report/                                   # All Publication & Report Content
+│   ├── IEEE-conference-template-062824.tex   # Official IEEE Paper LaTeX Source (Strictly 6 Pages)
+│   ├── CAD_SPAN_IEEE_Paper.pdf               # Publication-Grade PDF (Strictly 6 Pages)
+│   ├── IEEE-conference-template-062824.pdf   # Direct Compiled Conference PDF
+│   ├── methodology_architecture.png          # Fig. 1: 300 DPI 3D Isometric Architecture Diagram
+│   ├── combined_visual_comparison.png        # Fig. 2: Qualitative Visual Comparisons
+│   ├── ablation_curves.png                   # Fig. 3: 4-Panel Parameter Ablation Graphs
+│   ├── training_loss_curve.png               # Fig. 4: Empirical DIV2K Training Loss Curve
+│   ├── comprehensive_visual_gallery.png      # Extended 4-case benchmark visual gallery
+│   ├── visual_comparison_cad.png             # Zoom crop: butterfly (Set5)
+│   ├── visual_comparison_monarch.png         # Zoom crop: monarch (Set14)
+│   ├── visual_comparison_structural.png      # High-frequency structural line comparisons
+│   ├── crop_butterfly.png / crop_monarch.png # Zoomed crops
+│   ├── crop_ppt3.png / crop_zebra.png        # Typography & directional stripe crops
+│   ├── rendered_pages/                       # High-res PNG renders of each paper page (1 to 6)
+│   │   ├── page_1.png ... page_6.png
+│   │
+│   ├── generate_architecture_diagram.py      # Diagram generation script (Fig. 1)
+│   ├── generate_ablation_graphs.py           # Ablation curves script (Fig. 3)
+│   ├── generate_visual_comparison_monarch.py # Monarch comparison generator
+│   ├── generate_comprehensive_visual_gallery.py # Comprehensive gallery generator
+│   └── README.md                             # Report compilation & figure guide
 │
-├── basicsr/
+├── scripts/                                  # Utility, Benchmark & Tool Scripts
+│   ├── evaluate_comprehensive_benchmarks.py  # Comparative benchmark suite
+│   ├── evaluate_all_benchmarks.py            # Per-image PSNR/SSIM calculation
+│   ├── test_self_ensemble.py                 # D4 dihedral group self-ensemble test
+│   ├── tune_novel_attention.py               # Parameter ablation sweep
+│   ├── download_pretrained_models.py         # Weights downloader
+│   ├── publish_models.py                     # Model publisher
+│   └── data_preparation/, metrics/, plot/    # Preprocessing and metrics tools
+│
+├── assets/                                   # Media & Diagnostic Feature Maps
+│   ├── diag_att_map.png                      # Authentic attention map heatmap
+│   ├── diag_feat_map2.png / diag_feat_map3.png # Feature map heatmaps
+│   ├── diag_lr_baby.png / diag_hr_baby.png   # Set5 baby input/output patches
+│   └── demo.gif, model.png, results.png, vis.png
+│
+├── basicsr/                                  # Core Library Architecture
 │   ├── archs/
-│   │   ├── ag_span_arch.py                   # CAD-SPAN core model implementation
+│   │   ├── ag_span_arch.py                   # CAD-SPAN model definition
 │   │   └── span_arch.py                      # Baseline SPAN model
-│   ├── data/, losses/, metrics/, models/, ops/, utils/
+│   └── data/, losses/, metrics/, models/, ops/, utils/
 │
-├── datasets/
-│   ├── Set5/                                 # 5 standard test images
-│   ├── Set14/                                # 14 standard test images
-│   ├── BSD100/                               # 100 benchmark images
-│   └── DIV2K_mini/                           # Paired 2K resolution training patches
+├── datasets/                                 # Standard Benchmark Datasets
+│   ├── Set5/, Set14/, BSD100/, DIV2K_mini/
 │
-├── experiments/pretrained_models/
-│   ├── cad_span_x4.pth                       # Trained CAD-SPAN checkpoint
-│   └── spanx4_ch48.pth                       # Baseline SPAN checkpoint
-│
-├── evaluate_cad_span.py                      # Benchmark evaluator (Single & Ensemble)
-├── evaluate_comprehensive_benchmarks.py      # Benchmark comparison runner
-├── evaluate_all_benchmarks.py                # Per-image PSNR/SSIM calculation
-├── test_self_ensemble.py                     # D4 dihedral group self-ensemble test
-├── tune_novel_attention.py                   # Parameter ablation sweep
-├── train_ag_span.py                          # 20-epoch training & optimization script
-├── generate_architecture_diagram.py          # Script generating Fig. 1
-└── generate_ablation_graphs.py               # Script generating Fig. 3
+└── experiments/pretrained_models/            # Pretrained Model Weights
+    ├── cad_span_x4.pth                       # CAD-SPAN Checkpoint (9.0 MB)
+    └── spanx4_ch48.pth                       # Baseline SPAN Checkpoint (18.0 MB)
 ```
 
 ---

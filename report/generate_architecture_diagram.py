@@ -1,9 +1,10 @@
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
+REPO_ROOT = os.path.dirname(BASE_DIR)
+ASSETS_DIR = os.path.join(REPO_ROOT, 'assets') if os.path.exists(os.path.join(REPO_ROOT, 'assets')) else os.path.join(BASE_DIR, 'assets')
 if 'MPLCONFIGDIR' not in os.environ:
-    os.environ['MPLCONFIGDIR'] = os.path.join(BASE_DIR, '.mpl_cache')
+    os.environ['MPLCONFIGDIR'] = os.path.join(REPO_ROOT, '.mpl_cache')
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches

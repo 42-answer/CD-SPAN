@@ -1,10 +1,12 @@
-import torch
-import cv2
-import numpy as np
 import os
 import sys
 
-sys.path.insert(0, r"C:\Users\anike\.gemini\antigravity\scratch\SPAN")
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, REPO_ROOT)
+
+import torch
+import cv2
+import numpy as np
 
 from basicsr.archs.span_arch import SPAN
 from basicsr.utils.img_util import img2tensor, tensor2img
@@ -12,7 +14,8 @@ from basicsr.metrics.psnr_ssim import calculate_psnr, calculate_ssim
 
 device = 'cpu'
 base_model = SPAN(3, 3, feature_channels=48, upscale=4).to(device)
-ckpt = torch.load(r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\experiments\pretrained_models\spanx4_ch48.pth", map_location='cpu')
+ckpt_path = os.path.join(REPO_ROOT, "experiments", "pretrained_models", "spanx4_ch48.pth")
+ckpt = torch.load(ckpt_path, map_location='cpu')
 state = ckpt['params_ema'] if 'params_ema' in ckpt else ckpt['params']
 base_model.load_state_dict(state, strict=True)
 base_model.eval()
@@ -55,8 +58,8 @@ def forward_x8(model, lq_tensor):
     return avg_out
 
 # Test on Set5
-set5_lq = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set5\LRbicx4"
-set5_gt = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set5\GTmod12"
+set5_lq = os.path.join(REPO_ROOT, "datasets", "Set5", "LRbicx4")
+set5_gt = os.path.join(REPO_ROOT, "datasets", "Set5", "GTmod12")
 
 p_standard, p_ensemble = [], []
 s_standard, s_ensemble = [], []

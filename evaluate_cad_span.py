@@ -1,11 +1,13 @@
+import os
+import sys
+
+REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, REPO_ROOT)
+
 import torch
 import cv2
 import numpy as np
-import os
-import sys
 import torch.nn.functional as F
-
-sys.path.insert(0, r"C:\Users\anike\.gemini\antigravity\scratch\SPAN")
 
 from basicsr.archs.span_arch import SPAN
 from basicsr.utils.img_util import img2tensor, tensor2img
@@ -74,19 +76,19 @@ def make_cad_forward(block, tau=0.502, gs=0.008, gl=0.001):
 def load_pairs(dataset_name):
     pairs = []
     if dataset_name == "Set5":
-        lq_dir = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set5\LRbicx4"
-        gt_dir = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set5\GTmod12"
+        lq_dir = os.path.join(REPO_ROOT, "datasets", "Set5", "LRbicx4")
+        gt_dir = os.path.join(REPO_ROOT, "datasets", "Set5", "GTmod12")
         for f in sorted(os.listdir(lq_dir)):
             gt_p = os.path.join(gt_dir, f if os.path.exists(os.path.join(gt_dir, f)) else f.replace('.png', '_GT.png'))
             pairs.append((f, os.path.join(lq_dir, f), gt_p))
     elif dataset_name == "Set14":
-        lq_dir = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set14\LRbicx4"
-        gt_dir = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set14\GTmod12"
+        lq_dir = os.path.join(REPO_ROOT, "datasets", "Set14", "LRbicx4")
+        gt_dir = os.path.join(REPO_ROOT, "datasets", "Set14", "GTmod12")
         for f in sorted(os.listdir(lq_dir)):
             gt_p = os.path.join(gt_dir, f if os.path.exists(os.path.join(gt_dir, f)) else f.replace('.png', '_GT.png'))
             pairs.append((f, os.path.join(lq_dir, f), gt_p))
     elif dataset_name == "BSD100":
-        bsd_dir = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\BSD100\BSD100\image_SRF_4"
+        bsd_dir = os.path.join(REPO_ROOT, "datasets", "BSD100", "BSD100", "image_SRF_4")
         lr_files = sorted([f for f in os.listdir(bsd_dir) if f.endswith('_LR.png')])[:25]
         for f in lr_files:
             gt_p = os.path.join(bsd_dir, f.replace('_LR.png', '_HR.png'))
@@ -118,7 +120,8 @@ def evaluate(model, pairs, ensemble=False):
     return np.mean(psnrs), np.mean(ssims), results
 
 def main():
-    ckpt = torch.load(r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\experiments\pretrained_models\spanx4_ch48.pth", map_location='cpu')
+    ckpt_p = os.path.join(REPO_ROOT, "experiments", "pretrained_models", "spanx4_ch48.pth")
+    ckpt = torch.load(ckpt_p, map_location='cpu')
     state = ckpt.get('params_ema', ckpt.get('params'))
 
     # 1. Baseline SPAN

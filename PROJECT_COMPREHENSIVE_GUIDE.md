@@ -609,53 +609,65 @@ Below is an exhaustive documentation of the common conceptual fallacies, the aut
 The repository is structured cleanly with zero obsolete or duplicate files:
 
 ```
-SPAN/
-├── IEEE-conference-template-062824.tex       # Official IEEE Conference Paper Source (LaTeX, 6 Pages Strict)
-├── IEEE-conference-template-062824.pdf       # Native XeTeX-compiled Research Paper (6 Pages Strict)
-├── CAD_SPAN_IEEE_Paper.pdf                   # Official Publication PDF
-├── CAD_SPAN_Submission_Package.zip           # Complete Self-Contained Submission Package
-├── PROJECT_COMPREHENSIVE_GUIDE.md            # This detailed technical documentation guide
+CD-SPAN/
+├── evaluate_cad_span.py                      # Main evaluation script for Single-Pass and Ensemble modes
+├── train_ag_span.py                          # 20-epoch training and optimization pipeline
+├── README.md                                 # Official GitHub repository presentation and guide
+├── PROJECT_COMPREHENSIVE_GUIDE.md            # This detailed technical documentation guide (60 KB)
+├── requirements.txt                          # Core dependencies (torch, torchvision, opencv-python, etc.)
+├── setup.py / setup.cfg                      # BasicSR package installer configuration
 │
-├── methodology_architecture.png              # Figure 1: Large 6060x4110 publication-grade Architecture Diagram
-├── comprehensive_visual_gallery.png          # Figure 2: Comprehensive 4-case Qualitative Visual Comparisons
-├── visual_comparison_structural.png          # High-frequency structural and alphanumeric text comparisons
-├── crop_butterfly.png                        # Set5 butterfly wing vein zoomed crop
-├── crop_monarch.png                          # Set14 monarch margin spots zoomed crop
-├── crop_zebra.png                            # Set14 zebra directional stripes zoomed crop
-├── crop_ppt3.png                             # Set14 ppt3 alphanumeric typography zoomed crop
-├── ablation_curves.png                       # Figure 3: 4-Panel Parameter Sensitivity & Gain Plots
-├── training_loss_curve.png                   # Figure 4: Mandatory 20-Epoch Loss Convergence Curve
+├── report/                                   # All Publication & Report Content
+│   ├── IEEE-conference-template-062824.tex   # Official IEEE Paper LaTeX Source (Strictly 6 Pages)
+│   ├── CAD_SPAN_IEEE_Paper.pdf               # Publication-Grade PDF (Strictly 6 Pages)
+│   ├── IEEE-conference-template-062824.pdf   # Direct Compiled Conference PDF
+│   ├── methodology_architecture.png          # Fig. 1: 300 DPI 3D Isometric Architecture Diagram
+│   ├── combined_visual_comparison.png        # Fig. 2: Qualitative Visual Comparisons (Butterfly & Monarch)
+│   ├── ablation_curves.png                   # Fig. 3: 4-Panel Parameter Sensitivity & Gain Plots
+│   ├── training_loss_curve.png               # Fig. 4: Mandatory 20-Epoch Loss Convergence Curve
+│   ├── comprehensive_visual_gallery.png      # Extended 4-case benchmark visual gallery
+│   ├── visual_comparison_cad.png             # Zoom crop: butterfly (Set5)
+│   ├── visual_comparison_monarch.png         # Zoom crop: monarch (Set14)
+│   ├── visual_comparison_structural.png      # High-frequency structural line & text comparison
+│   ├── crop_butterfly.png / crop_monarch.png # Zoomed crops
+│   ├── crop_ppt3.png / crop_zebra.png        # Typography & directional stripe crops
+│   ├── rendered_pages/                       # High-res PNG renders of each paper page (1 to 6)
+│   │   ├── page_1.png ... page_6.png
+│   │
+│   ├── generate_architecture_diagram.py      # Diagram generation script (Fig. 1)
+│   ├── generate_ablation_graphs.py           # Ablation curves script (Fig. 3)
+│   ├── generate_visual_comparison_monarch.py # Monarch comparison generator
+│   ├── generate_comprehensive_visual_gallery.py # Comprehensive gallery generator
+│   └── README.md                             # Report compilation & figure guide
 │
-├── basicsr/
+├── scripts/                                  # Utility, Benchmark & Tool Scripts
+│   ├── evaluate_comprehensive_benchmarks.py  # Multi-benchmark comparison script
+│   ├── evaluate_all_benchmarks.py            # Per-image PSNR and SSIM breakdown evaluator
+│   ├── test_self_ensemble.py                 # D4 dihedral group test-time ensemble verification
+│   ├── tune_novel_attention.py               # Automated grid search script for gamma and tau
+│   ├── download_pretrained_models.py         # Weights downloader
+│   ├── publish_models.py                     # Model publisher
+│   └── data_preparation/, metrics/, plot/    # Preprocessing and metrics tools
+│
+├── assets/                                   # Media & Diagnostic Feature Maps
+│   ├── diag_att_map.png                      # Authentic Set5 attention map heatmap
+│   ├── diag_feat_map2.png / diag_feat_map3.png # Authentic feature map heatmaps
+│   ├── diag_lr_baby.png / diag_hr_baby.png   # Set5 baby input and reconstructed patches
+│   └── demo.gif, model.png, results.png, vis.png
+│
+├── basicsr/                                  # Core Library Architecture
 │   ├── archs/
 │   │   ├── ag_span_arch.py                   # CAD-SPAN core architecture (CAD_SPAN and CAD_SPAB classes)
 │   │   ├── span_arch.py                      # Baseline SPAN model definition & Conv3XC reparameterization
 │   │   └── arch_util.py                      # Convolutions, SiLU activations, and tensor utilities
-│   ├── data/                                 # Paired image loading, augmentations, and degradations
-│   ├── losses/                               # L1 loss and perceptual loss definitions
-│   ├── metrics/                              # PSNR and SSIM metric calculation on Y-channel
-│   ├── models/                               # Training and validation wrappers
-│   └── utils/                                # File I/O, logging, and PyTorch utilities
+│   ├── data/, losses/, metrics/, models/, ops/, utils/
 │
-├── datasets/
-│   ├── Set5/                                 # 5 standard evaluation benchmark images
-│   ├── Set14/                                # 14 standard evaluation benchmark images
-│   ├── BSD100/                               # 100 diverse natural benchmark images
-│   └── DIV2K_mini/                           # Paired 2K resolution training patches
+├── datasets/                                 # Standard Benchmark Datasets
+│   ├── Set5/, Set14/, BSD100/, DIV2K_mini/
 │
-├── experiments/pretrained_models/
-│   ├── cad_span_x4.pth                       # Pretrained weights for novel CAD-SPAN (9.0 MB)
-│   └── spanx4_ch48.pth                       # Official baseline weights (18.0 MB)
-│
-├── evaluate_cad_span.py                      # Main evaluation script for Single-Pass and Ensemble modes
-├── evaluate_comprehensive_benchmarks.py      # Multi-benchmark comparison script
-├── evaluate_all_benchmarks.py                # Per-image PSNR and SSIM breakdown evaluator
-├── generate_comprehensive_visual_gallery.py  # Script generating the 4-case comparison figure and crops
-├── generate_architecture_diagram.py          # Script generating Figure 1 (publication-grade architecture diagram)
-├── generate_ablation_graphs.py               # Script generating Figure 3 (ablation curves)
-├── test_self_ensemble.py                     # D4 dihedral group test-time ensemble verification
-├── tune_novel_attention.py                   # Automated grid search script for gamma and tau
-└── train_ag_span.py                          # 20-epoch training and optimization pipeline
+└── experiments/pretrained_models/            # Pretrained Model Checkpoints
+    ├── cad_span_x4.pth                       # Pretrained weights for novel CAD-SPAN (9.0 MB)
+    └── spanx4_ch48.pth                       # Official baseline weights (18.0 MB)
 ```
 
 ---

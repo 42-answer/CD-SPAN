@@ -1,5 +1,5 @@
 # ignored folders
-rendered_pages/
+/rendered_pages/
 .mpl_cache/
 datasets/*
 experiments/*

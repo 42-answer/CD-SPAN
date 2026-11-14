@@ -1,5 +1,6 @@
 import os
-os.environ['MPLCONFIGDIR'] = r'C:\Users\anike\.gemini\antigravity\scratch\mpl_cache'
+if 'MPLCONFIGDIR' not in os.environ:
+    os.environ['MPLCONFIGDIR'] = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.mpl_cache')
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -65,7 +66,8 @@ for bar, g in zip(bars4, gains[::-1]):
     ax4.text(g + 0.004, bar.get_y() + bar.get_height()/2, f'+{g:.3f} dB', ha='left', va='center', fontsize=8, fontweight='bold')
 
 plt.tight_layout()
-out_ablation = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\report\ablation_curves.png"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+out_ablation = os.path.join(BASE_DIR, "ablation_curves.png")
 plt.savefig(out_ablation, bbox_inches='tight', dpi=300)
 print(f"Ablation graphs saved to {out_ablation}")
 

@@ -1,5 +1,8 @@
 import os
-os.environ['MPLCONFIGDIR'] = r'C:\Users\anike\.gemini\antigravity\scratch\mpl_cache'
+REPORT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(REPORT_DIR)
+if 'MPLCONFIGDIR' not in os.environ:
+    os.environ['MPLCONFIGDIR'] = os.path.join(REPO_ROOT, '.mpl_cache')
 
 import torch
 import cv2
@@ -9,7 +12,7 @@ from matplotlib.patches import Rectangle
 import torch.nn.functional as F
 import sys
 
-sys.path.insert(0, r"C:\Users\anike\.gemini\antigravity\scratch\SPAN")
+sys.path.insert(0, REPO_ROOT)
 
 from basicsr.archs.span_arch import SPAN
 from basicsr.utils.img_util import img2tensor, tensor2img
@@ -83,8 +86,8 @@ for blk in [cad_model.block_1, cad_model.block_2, cad_model.block_3, cad_model.b
 cad_model.eval()
 
 # Select monarch.png from Set14
-lq_p = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set14\LRbicx4\monarch.png"
-gt_p = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set14\GTmod12\monarch.png"
+lq_p = os.path.join(REPO_ROOT, "datasets", "Set14", "LRbicx4", "monarch.png")
+gt_p = os.path.join(REPO_ROOT, "datasets", "Set14", "GTmod12", "monarch.png")
 
 lq = cv2.imread(lq_p) / 255.0
 gt = cv2.imread(gt_p)
@@ -142,7 +145,7 @@ for idx, (title, img_bgr, metric_text) in enumerate(images):
         spine.set_linewidth(2.0)
 
 plt.tight_layout()
-out_fig = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\report\visual_comparison_monarch.png"
+out_fig = os.path.join(REPORT_DIR, "visual_comparison_monarch.png")
 plt.savefig(out_fig, bbox_inches='tight', dpi=300)
 print(f"Monarch comparison figure saved to {out_fig}")
 

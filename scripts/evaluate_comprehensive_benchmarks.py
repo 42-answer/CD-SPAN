@@ -1,11 +1,13 @@
+import os
+import sys
+
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, REPO_ROOT)
+
 import torch
 import cv2
 import numpy as np
-import os
-import sys
 import time
-
-sys.path.insert(0, r"C:\Users\anike\.gemini\antigravity\scratch\SPAN")
 
 from basicsr.archs.span_arch import SPAN
 from basicsr.archs.ag_span_arch import AG_SPAN
@@ -78,7 +80,8 @@ def evaluate_dataset(model, dataset_name, lq_dir, gt_dir, ensemble=False, max_im
     return np.mean(psnrs), np.mean(ssims), np.mean(latencies)
 
 # Load Models
-ckpt = torch.load(r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\experiments\pretrained_models\spanx4_ch48.pth", map_location='cpu')
+ckpt_path = os.path.join(REPO_ROOT, "experiments", "pretrained_models", "spanx4_ch48.pth")
+ckpt = torch.load(ckpt_path, map_location='cpu')
 state = ckpt['params_ema'] if 'params_ema' in ckpt else ckpt['params']
 
 # 1. Baseline Model
@@ -92,13 +95,13 @@ for block in [ag_model.block_1, ag_model.block_2, ag_model.block_3, ag_model.blo
     block.gamma.data.fill_(0.010)
 
 # Paths
-s5_lq = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set5\LRbicx4"
-s5_gt = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set5\GTmod12"
+s5_lq = os.path.join(REPO_ROOT, "datasets", "Set5", "LRbicx4")
+s5_gt = os.path.join(REPO_ROOT, "datasets", "Set5", "GTmod12")
 
-s14_lq = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set14\LRbicx4"
-s14_gt = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set14\GTmod12"
+s14_lq = os.path.join(REPO_ROOT, "datasets", "Set14", "LRbicx4")
+s14_gt = os.path.join(REPO_ROOT, "datasets", "Set14", "GTmod12")
 
-bsd_dir = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\BSD100\BSD100\image_SRF_4"
+bsd_dir = os.path.join(REPO_ROOT, "datasets", "BSD100", "BSD100", "image_SRF_4")
 
 print("Evaluating across benchmarks: Set5, Set14, BSD100...")
 

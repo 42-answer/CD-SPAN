@@ -1,11 +1,14 @@
 import os
 import sys
+
+REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+if 'MPLCONFIGDIR' not in os.environ:
+    os.environ['MPLCONFIGDIR'] = os.path.join(REPO_ROOT, '.mpl_cache')
+sys.path.insert(0, REPO_ROOT)
+
 import json
 import random
 import time
-
-# Set matplotlib cache directory before importing matplotlib
-os.environ['MPLCONFIGDIR'] = r"C:\Users\anike\.gemini\antigravity\scratch\mpl_cache"
 
 import torch
 import torch.nn as nn
@@ -14,8 +17,6 @@ from torch.utils.data import Dataset, DataLoader
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-
-sys.path.insert(0, r"C:\Users\anike\.gemini\antigravity\scratch\SPAN")
 
 from basicsr.archs.ag_span_arch import AG_SPAN
 from basicsr.utils.img_util import img2tensor, tensor2img
@@ -111,24 +112,24 @@ def main():
     model = AG_SPAN(num_in_ch=3, num_out_ch=3, feature_channels=48, upscale=4).to(device)
 
     # Load baseline pretrained weights
-    ckpt_path = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\experiments\pretrained_models\spanx4_ch48.pth"
+    ckpt_path = os.path.join(REPO_ROOT, "experiments", "pretrained_models", "spanx4_ch48.pth")
     ckpt = torch.load(ckpt_path, map_location='cpu')
     state = ckpt['params_ema'] if 'params_ema' in ckpt else ckpt['params']
     model.load_state_dict(state, strict=False)
     print("Baseline weights loaded into AG-SPAN.", flush=True)
 
     # Datasets
-    set5_lq = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set5\LRbicx4"
-    set5_gt = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set5\GTmod12"
-    set14_lq = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set14\LRbicx4"
-    set14_gt = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set14\GTmod12"
+    set5_lq = os.path.join(REPO_ROOT, "datasets", "Set5", "LRbicx4")
+    set5_gt = os.path.join(REPO_ROOT, "datasets", "Set5", "GTmod12")
+    set14_lq = os.path.join(REPO_ROOT, "datasets", "Set14", "LRbicx4")
+    set14_gt = os.path.join(REPO_ROOT, "datasets", "Set14", "GTmod12")
 
     init_s5_p, init_s5_s, init_lat = eval_dataset(model, "Set5", set5_lq, set5_gt, device)
     print(f"Baseline (Epoch 0) -> Set5 PSNR: {init_s5_p:.4f} dB, SSIM: {init_s5_s:.4f}", flush=True)
 
     # Training Data
-    hr_dir = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\DIV2K_mini\HR"
-    lr_dir = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\DIV2K_mini\LR"
+    hr_dir = os.path.join(REPO_ROOT, "datasets", "DIV2K_mini", "HR")
+    lr_dir = os.path.join(REPO_ROOT, "datasets", "DIV2K_mini", "LR")
     
     batch_size = 8
     num_samples = 160 # 20 batches per epoch
@@ -157,7 +158,7 @@ def main():
     epoch_losses = []
     val_records = []
     best_psnr = init_s5_p
-    best_ckpt_path = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\experiments\pretrained_models\ag_span_x4_best.pth"
+    best_ckpt_path = os.path.join(REPO_ROOT, "experiments", "pretrained_models", "ag_span_x4_best.pth")
 
     print("\n--- Training Loop Starting ---", flush=True)
     t_start = time.time()
@@ -211,7 +212,7 @@ def main():
     ax.grid(True, linestyle='--', alpha=0.6)
     ax.legend(fontsize=11)
     plt.tight_layout()
-    plot_loss_path = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\experiments\training_loss_curve.png"
+    plot_loss_path = os.path.join(REPO_ROOT, "report", "training_loss_curve.png")
     plt.savefig(plot_loss_path)
     plt.close()
     print(f"Loss plot saved to: {plot_loss_path}", flush=True)
@@ -250,7 +251,7 @@ def main():
         'val_records': val_records
     }
 
-    results_path = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\experiments\final_comparative_results.json"
+    results_path = os.path.join(REPO_ROOT, "experiments", "final_comparative_results.json")
     with open(results_path, 'w') as f:
         json.dump(results, f, indent=2)
 

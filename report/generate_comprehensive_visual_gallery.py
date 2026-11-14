@@ -1,5 +1,8 @@
 import os
-os.environ['MPLCONFIGDIR'] = r'C:\Users\anike\.gemini\antigravity\scratch\mpl_cache'
+REPORT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(REPORT_DIR)
+if 'MPLCONFIGDIR' not in os.environ:
+    os.environ['MPLCONFIGDIR'] = os.path.join(REPO_ROOT, '.mpl_cache')
 
 import torch
 import cv2
@@ -9,7 +12,7 @@ from matplotlib.patches import Rectangle
 import torch.nn.functional as F
 import sys
 
-sys.path.insert(0, r"C:\Users\anike\.gemini\antigravity\scratch\SPAN")
+sys.path.insert(0, REPO_ROOT)
 
 from basicsr.archs.span_arch import SPAN
 from basicsr.utils.img_util import img2tensor, tensor2img
@@ -115,11 +118,11 @@ fig, axes = plt.subplots(4, 4, figsize=(18, 17), dpi=300)
 
 for row_idx, item in enumerate(cases):
     if item['set'] == 'Set5':
-        lq_p = os.path.join(r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set5\LRbicx4", item['name'])
-        gt_p = os.path.join(r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set5\GTmod12", item['name'])
+        lq_p = os.path.join(REPO_ROOT, "datasets", "Set5", "LRbicx4", item['name'])
+        gt_p = os.path.join(REPO_ROOT, "datasets", "Set5", "GTmod12", item['name'])
     else:
-        lq_p = os.path.join(r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set14\LRbicx4", item['name'])
-        gt_p = os.path.join(r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set14\GTmod12", item['name'])
+        lq_p = os.path.join(REPO_ROOT, "datasets", "Set14", "LRbicx4", item['name'])
+        gt_p = os.path.join(REPO_ROOT, "datasets", "Set14", "GTmod12", item['name'])
 
     lq = cv2.imread(lq_p) / 255.0
     gt = cv2.imread(gt_p)
@@ -188,13 +191,13 @@ for row_idx, item in enumerate(cases):
         axes_ind[c_i].set_title(f"{m_t}\n{m_s}", fontsize=11, fontweight='bold')
         axes_ind[c_i].axis('off')
     plt.tight_layout()
-    ind_save_path = os.path.join(r"C:\Users\anike\.gemini\antigravity\scratch\SPAN", f"crop_{item['name'].replace('.png', '')}.png")
+    ind_save_path = os.path.join(REPORT_DIR, f"crop_{item['name'].replace('.png', '')}.png")
     fig_ind.savefig(ind_save_path, bbox_inches='tight', dpi=300)
     plt.close(fig_ind)
     print(f"Saved individual crop comparison to {ind_save_path}")
 
 plt.tight_layout()
-out_all = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\comprehensive_visual_gallery.png"
+out_all = os.path.join(REPORT_DIR, "comprehensive_visual_gallery.png")
 fig.savefig(out_all, bbox_inches='tight', dpi=300)
 plt.close(fig)
 print(f"Saved comprehensive 4-case gallery to {out_all}")

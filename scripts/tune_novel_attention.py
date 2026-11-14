@@ -1,15 +1,18 @@
+import os
+import sys
+
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if 'MPLCONFIGDIR' not in os.environ:
+    os.environ['MPLCONFIGDIR'] = os.path.join(REPO_ROOT, '.mpl_cache')
+sys.path.insert(0, REPO_ROOT)
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
-import os
-import sys
 import numpy as np
 import time
-
-os.environ['MPLCONFIGDIR'] = r"C:\Users\anike\.gemini\antigravity\scratch\mpl_cache"
-sys.path.insert(0, r"C:\Users\anike\.gemini\antigravity\scratch\SPAN")
 
 from basicsr.archs.span_arch import SPAN
 from basicsr.archs.ag_span_arch import AG_SPAN
@@ -24,8 +27,8 @@ def evaluate_all(model, device='cpu', max_bsd=20):
     model.eval()
     
     # Set5
-    s5_lq = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set5\LRbicx4"
-    s5_gt = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set5\GTmod12"
+    s5_lq = os.path.join(REPO_ROOT, "datasets", "Set5", "LRbicx4")
+    s5_gt = os.path.join(REPO_ROOT, "datasets", "Set5", "GTmod12")
     s5_p, s5_s = [], []
     for f in sorted(os.listdir(s5_lq)):
         if not f.endswith('.png'): continue
@@ -41,8 +44,8 @@ def evaluate_all(model, device='cpu', max_bsd=20):
         s5_s.append(calculate_ssim(sr, gt, crop_border=4, test_y_channel=True))
         
     # Set14
-    s14_lq = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set14\LRbicx4"
-    s14_gt = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\Set14\GTmod12"
+    s14_lq = os.path.join(REPO_ROOT, "datasets", "Set14", "LRbicx4")
+    s14_gt = os.path.join(REPO_ROOT, "datasets", "Set14", "GTmod12")
     s14_p, s14_s = [], []
     for f in sorted(os.listdir(s14_lq)):
         if not f.endswith('.png'): continue
@@ -59,7 +62,7 @@ def evaluate_all(model, device='cpu', max_bsd=20):
         s14_s.append(calculate_ssim(sr, gt, crop_border=4, test_y_channel=True))
 
     # BSD100
-    bsd_dir = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\BSD100\BSD100\image_SRF_4"
+    bsd_dir = os.path.join(REPO_ROOT, "datasets", "BSD100", "BSD100", "image_SRF_4")
     bsd_p, bsd_s = [], []
     bsd_lr_files = sorted([f for f in os.listdir(bsd_dir) if f.endswith('_LR.png')])[:max_bsd]
     for lr_f in bsd_lr_files:
@@ -84,7 +87,8 @@ def evaluate_all(model, device='cpu', max_bsd=20):
 import cv2
 print("Evaluating Baseline SPAN...")
 base_model = SPAN(3, 3, feature_channels=48, upscale=4).to(device)
-ckpt = torch.load(r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\experiments\pretrained_models\spanx4_ch48.pth", map_location='cpu')
+ckpt_path = os.path.join(REPO_ROOT, "experiments", "pretrained_models", "spanx4_ch48.pth")
+ckpt = torch.load(ckpt_path, map_location='cpu')
 state = ckpt['params_ema'] if 'params_ema' in ckpt else ckpt['params']
 base_model.load_state_dict(state, strict=True)
 res_base = evaluate_all(base_model, device)
@@ -105,8 +109,8 @@ res_ag_init = evaluate_all(ag_model, device)
 print(f"AG-SPAN (Init) -> Set5: {res_ag_init['set5'][0]:.4f} dB | Set14: {res_ag_init['set14'][0]:.4f} dB | BSD: {res_ag_init['bsd'][0]:.4f} dB")
 
 # Dataset
-hr_dir = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\DIV2K_mini\HR"
-lr_dir = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\datasets\DIV2K_mini\LR"
+hr_dir = os.path.join(REPO_ROOT, "datasets", "DIV2K_mini", "HR")
+lr_dir = os.path.join(REPO_ROOT, "datasets", "DIV2K_mini", "LR")
 dataset = PairedCropDataset(hr_dir, lr_dir, hr_crop_size=128, scale=4, num_samples=120)
 dataloader = DataLoader(dataset, batch_size=6, shuffle=True)
 
