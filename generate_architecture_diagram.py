@@ -1,5 +1,9 @@
 import os
-os.environ['MPLCONFIGDIR'] = r'C:\Users\anike\.gemini\antigravity\scratch\mpl_cache'
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
+if 'MPLCONFIGDIR' not in os.environ:
+    os.environ['MPLCONFIGDIR'] = os.path.join(BASE_DIR, '.mpl_cache')
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -169,7 +173,7 @@ draw_panel(ax, 0.30, 7.90, 19.40, 5.85,
            'Input LR -> Shallow Conv3XC -> 6 CAD-SPABs -> Refine Conv -> Concat -> PixelShuffle -> HR Output')
 
 # 1. Real LR Input Baby Image (Set5)
-lr_img_path = r'C:\Users\anike\.gemini\antigravity\scratch\SPAN\diag_lr_baby.png'
+lr_img_path = os.path.join(ASSETS_DIR, 'diag_lr_baby.png')
 if os.path.exists(lr_img_path):
     lr_pil = Image.open(lr_img_path)
     ax.imshow(lr_pil, extent=[0.55, 1.75, 8.85, 10.45], aspect='auto', zorder=4)
@@ -278,7 +282,7 @@ ax.plot([18.35, 18.75], [10.55, 10.65], color='#16A34A', lw=1.2, linestyle='--',
 ax.plot([18.35, 18.75], [8.95, 8.85], color='#16A34A', lw=1.2, linestyle='--', zorder=4)
 
 # Real HR Output Baby Image (Set5)
-hr_img_path = r'C:\Users\anike\.gemini\antigravity\scratch\SPAN\diag_hr_baby.png'
+hr_img_path = os.path.join(ASSETS_DIR, 'diag_hr_baby.png')
 if os.path.exists(hr_img_path):
     hr_pil = Image.open(hr_img_path)
     ax.imshow(hr_pil, extent=[18.65, 19.55, 8.85, 10.75], aspect='auto', zorder=4)
@@ -323,7 +327,7 @@ card_bg = FancyBboxPatch((0.40, 0.32), 12.60, 6.75, boxstyle="round,pad=0.03,rou
 ax.add_patch(card_bg)
 
 # 1. Real Input Feature Map Heatmap (Feat. Map 2 from CAD-SPAN)
-hm2_path = r'C:\Users\anike\.gemini\antigravity\scratch\SPAN\diag_feat_map2.png'
+hm2_path = os.path.join(ASSETS_DIR, 'diag_feat_map2.png')
 if os.path.exists(hm2_path):
     hm2_pil = Image.open(hm2_path)
     ax.imshow(hm2_pil, extent=[0.55, 1.45, 4.30, 5.70], aspect='auto', zorder=4)
@@ -459,7 +463,7 @@ draw_block(ax, 10.75, 4.35, 1.20, 0.75,
            '[B, 48, H, W]', color='#FDF2F8', border='#DB2777', title_size=7.8, sub_size=6.6, dim_size=6.2)
 
 # Real Attention Map Heatmap (att1 from CAD-SPAN)
-att_img_path = r'C:\Users\anike\.gemini\antigravity\scratch\SPAN\diag_att_map.png'
+att_img_path = os.path.join(ASSETS_DIR, 'diag_att_map.png')
 if os.path.exists(att_img_path):
     att_pil = Image.open(att_img_path)
     ax.imshow(att_pil, extent=[12.10, 12.80, 3.65, 4.75], aspect='auto', zorder=4)
@@ -477,7 +481,7 @@ draw_conn(ax, 11.47, 5.10, 11.47, 6.05, text=r'$\widetilde{A}$')
 draw_conn(ax, 11.67, 6.25, 12.05, 6.25)
 
 # Real Output Feature Map Heatmap (Feat. Map 3 from CAD-SPAN)
-hm3_path = r'C:\Users\anike\.gemini\antigravity\scratch\SPAN\diag_feat_map3.png'
+hm3_path = os.path.join(ASSETS_DIR, 'diag_feat_map3.png')
 if os.path.exists(hm3_path):
     hm3_pil = Image.open(hm3_path)
     ax.imshow(hm3_pil, extent=[12.05, 12.85, 5.65, 6.85], aspect='auto', zorder=4)
@@ -567,7 +571,7 @@ draw_block(ax, 18.70, 1.45, 0.75, 0.85, 'Output', '$C_{out}$', color='#DCFCE7', 
 ax.text(16.52, 0.65, r'Mathematical Identity: $\mathrm{Conv3XC}(X) \equiv \mathrm{Conv2d}(X, \mathbf{W}_{eval}, \mathbf{B}_{eval})$',
         ha='center', va='center', fontsize=7.2, fontweight='bold', color='#14532D', zorder=3)
 
-out_arch = r"C:\Users\anike\.gemini\antigravity\scratch\SPAN\methodology_architecture.png"
+out_arch = os.path.join(BASE_DIR, "methodology_architecture.png")
 plt.savefig(out_arch, bbox_inches='tight', dpi=300)
 plt.close()
 print(f"Flawless, publication-grade Architecture Diagram saved to {out_arch}")

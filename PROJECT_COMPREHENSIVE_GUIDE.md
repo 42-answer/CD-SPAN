@@ -651,7 +651,7 @@ SPAN/
 ├── evaluate_comprehensive_benchmarks.py      # Multi-benchmark comparison script
 ├── evaluate_all_benchmarks.py                # Per-image PSNR and SSIM breakdown evaluator
 ├── generate_comprehensive_visual_gallery.py  # Script generating the 4-case comparison figure and crops
-├── generate_perfected_architecture.py        # Script generating Figure 1 (publication-grade architecture diagram)
+├── generate_architecture_diagram.py          # Script generating Figure 1 (publication-grade architecture diagram)
 ├── generate_ablation_graphs.py               # Script generating Figure 3 (ablation curves)
 ├── test_self_ensemble.py                     # D4 dihedral group test-time ensemble verification
 ├── tune_novel_attention.py                   # Automated grid search script for gamma and tau

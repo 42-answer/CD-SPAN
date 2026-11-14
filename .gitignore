@@ -1,5 +1,6 @@
 # ignored folders
 rendered_pages/
+.mpl_cache/
 datasets/*
 experiments/*
 !experiments/pretrained_models/
